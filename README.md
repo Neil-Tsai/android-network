@@ -27,7 +27,7 @@ Step 2. Add the dependency
 object TestApi {
 
     private val service: ApiService by lazy {
-        NetworkClient.getInstance(App.instance, BuildConfig.DEBUG)
+        NetworkClient.getInstance(mContext)
             .create(ApiService::class.java)
     }
     
@@ -42,13 +42,13 @@ object TestApi {
 object BaseApi {
 
     private val newClient: OkHttpClient by lazy {
-        NetworkClient.getInstance(App.instance, BuildConfig.DEBUG)
+        NetworkClient.getInstance(mContext)
             .clientNewBuilder()
             .build()
     }
     
     val newRetrofit: Retrofit by lazy {
-        NetworkClient.getInstance(App.instance, BuildConfig.DEBUG)
+        NetworkClient.getInstance(mContext)
             .retrofitNewBuilder()
             .client(newClient)
             .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
@@ -74,3 +74,17 @@ object TestApi {
     }
     
 }
+
+# 取消連線
+
+範例:
+NetworkClient.getInstance(mContext).clientCancel("yourUrl", newClient)
+
+url:
+不需額外設定tag，預設以url為tag，使用上直接帶上url即可
+
+newClient:
+若有自定義client則帶入自定義client，若無不需帶值，使用原本的client
+
+
+
