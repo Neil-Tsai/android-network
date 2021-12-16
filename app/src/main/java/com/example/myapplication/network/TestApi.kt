@@ -1,10 +1,9 @@
 package com.example.myapplication.network
 
-import com.example.myapplication.App
 import com.example.myapplication.BuildConfig
+import com.example.myapplication.network.BaseApi.networkClient
 import com.example.myapplication.network.BaseApi.newRetrofit
 import com.google.gson.JsonObject
-import com.neil.network.NetworkClient
 import com.neil.network.retryFactory.Retry
 import io.reactivex.rxjava3.core.Observable
 import kotlinx.coroutines.Dispatchers
@@ -16,7 +15,7 @@ import java.util.*
 
 object TestApi{
     // Test open data api
-    private const val apiKey = "?limit=10&api_key=9be7b239-557b-4c10-9775-78cadfc555e9&sort=ImportDate%20desc&format=json"
+    private const val apiKey = "?limit=1&api_key=9be7b239-557b-4c10-9775-78cadfc555e9&sort=ImportDate%20desc&format=json"
 
     private const val baseUrl = "https://data.epa.gov.tw/api/v1"
     private const val test1 = "/acidr_p_01$apiKey"
@@ -25,8 +24,7 @@ object TestApi{
     private const val test4 = "/aqf_p_01$apiKey"
 
     private val service: ApiService by lazy {
-        NetworkClient.getInstance(App.instance, BuildConfig.DEBUG)
-            .create(ApiService::class.java)
+        networkClient.create(ApiService::class.java)
     }
 
     private val service2: ApiService by lazy {

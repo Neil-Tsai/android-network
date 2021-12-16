@@ -26,20 +26,26 @@ import java.util.concurrent.TimeUnit
 
 data class RequestTag(var url: String = "")
 
-class NetworkClient constructor(mContext: Context, isDebugModel: Boolean) {
+class NetworkClient constructor(mContext: Context) {
 
     companion object {
         @Volatile
         private var instance: NetworkClient? = null
 
-        fun getInstance(mContext: Context, isDebugModel: Boolean) =
+        fun getInstance(mContext: Context) =
             instance ?: synchronized(this) {
-                instance ?: NetworkClient(mContext, isDebugModel).also { instance = it }
+                instance ?: NetworkClient(mContext).also { instance = it }
             }
     }
 
     private val defaultTimeOut = 10L
-    private val loggingInterceptor = HttpLoggingInterceptor()
+    private val loggingInterceptor by lazy {
+        HttpLoggingInterceptor().also {
+            it.setLevel(
+                HttpLoggingInterceptor.Level.BODY
+            )
+        }
+    }
     private val cookieJar: ClearableCookieJar by lazy {
         PersistentCookieJar(SetCookieCache(), SharedPrefsCookiePersistor(mContext))
     }
@@ -50,15 +56,6 @@ class NetworkClient constructor(mContext: Context, isDebugModel: Boolean) {
 
     private val retrofit: Retrofit by lazy {
         initRetrofitBuilder()
-    }
-
-    init {
-        loggingInterceptor.setLevel(
-            if (isDebugModel)
-                HttpLoggingInterceptor.Level.BODY
-            else
-                HttpLoggingInterceptor.Level.NONE
-        )
     }
 
     private fun initRetrofitBuilder(): Retrofit {
@@ -104,6 +101,19 @@ class NetworkClient constructor(mContext: Context, isDebugModel: Boolean) {
             .dispatcher(Dispatcher().also {
                 it.maxRequestsPerHost = 10
             }).build()
+    }
+    
+    /**
+     * HttpLoggingInterceptor setting
+     * @param isDebugModel
+     */
+    fun setHttpLogging(isDebugModel: Boolean) {
+        loggingInterceptor.setLevel(
+            if (isDebugModel)
+                HttpLoggingInterceptor.Level.BODY
+            else
+                HttpLoggingInterceptor.Level.NONE
+        )
     }
 
     /**

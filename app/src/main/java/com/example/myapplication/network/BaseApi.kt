@@ -9,20 +9,27 @@ import retrofit2.Retrofit
 import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory
 
 object BaseApi {
+    val networkClient: NetworkClient by lazy {
+        NetworkClient
+            .getInstance(App.instance)
+            .also {
+                it.setHttpLogging(BuildConfig.DEBUG)
+            }
+    }
 
     /**
-     * 透過newBuilder增加或變更配置，client有重新配置的話，retrofit需要重新配置client對像
+     *  創建新的連線配置
      */
     private val newClient: OkHttpClient by lazy {
         NetworkClient
-            .getInstance(App.instance, BuildConfig.DEBUG)
+            .getInstance(App.instance)
             .clientNewBuilder()
             .addInterceptor(headerInterceptor())
             .build()
     }
     val newRetrofit: Retrofit by lazy {
         NetworkClient
-            .getInstance(App.instance, BuildConfig.DEBUG)
+            .getInstance(App.instance)
             .retrofitNewBuilder()
             .client(newClient)
             .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
@@ -42,5 +49,9 @@ object BaseApi {
 
             chain.proceed(request)
         }
+    }
+
+    fun cancel(url: String) {
+        networkClient.clientCancel(url, newClient)
     }
 }
