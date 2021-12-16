@@ -2,6 +2,8 @@
 retrofit2 + okhttp3 單例基礎封裝，可取消單一或全部的client
 
 # How to
+[![](https://jitpack.io/v/Neil-Tsai/android-network.svg)](https://jitpack.io/#Neil-Tsai/android-network)
+
 To get a Git project into your build:
 
 Step 1. Add the JitPack repository to your build file
