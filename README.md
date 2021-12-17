@@ -83,7 +83,7 @@ object TestApi {
 NetworkClient.getInstance(mContext).clientCancel("yourUrl", newClient)
 ```
 
-| 參數          | 功能說明 						       |
+| 屬性          | 說明 						       |
 | ---      	| ---       						    |
 | url 		| 不需額外設定tag，預設以url為tag，使用上直接帶上url即可        |
 | newClient     | 若有自定義client則帶入自定義client，不帶值則使用原本的client  |
