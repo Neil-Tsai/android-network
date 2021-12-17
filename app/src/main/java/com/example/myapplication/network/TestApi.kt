@@ -1,6 +1,5 @@
 package com.example.myapplication.network
 
-import com.example.myapplication.BuildConfig
 import com.example.myapplication.network.BaseApi.networkClient
 import com.example.myapplication.network.BaseApi.newRetrofit
 import com.google.gson.JsonObject

@@ -11,9 +11,10 @@ import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory
 object BaseApi {
     val networkClient: NetworkClient by lazy {
         NetworkClient
-            .getInstance(App.instance)
+            .getInstance()
             .also {
-                it.setHttpLogging(BuildConfig.DEBUG)
+                it.setLoggingInterceptor(BuildConfig.DEBUG)
+                it.setCookie(App.instance)
             }
     }
 
@@ -22,14 +23,14 @@ object BaseApi {
      */
     private val newClient: OkHttpClient by lazy {
         NetworkClient
-            .getInstance(App.instance)
+            .getInstance()
             .clientNewBuilder()
             .addInterceptor(headerInterceptor())
             .build()
     }
     val newRetrofit: Retrofit by lazy {
         NetworkClient
-            .getInstance(App.instance)
+            .getInstance()
             .retrofitNewBuilder()
             .client(newClient)
             .addCallAdapterFactory(RxJava3CallAdapterFactory.create())

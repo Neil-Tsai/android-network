@@ -26,32 +26,26 @@ import java.util.concurrent.TimeUnit
 
 data class RequestTag(var url: String = "")
 
-class NetworkClient constructor(mContext: Context) {
+class NetworkClient {
 
     companion object {
         @Volatile
         private var instance: NetworkClient? = null
 
-        fun getInstance(mContext: Context) =
+        fun getInstance() =
             instance ?: synchronized(this) {
-                instance ?: NetworkClient(mContext).also { instance = it }
+                instance ?: NetworkClient().also { instance = it }
             }
     }
 
     private val defaultTimeOut = 10L
-    private val loggingInterceptor by lazy {
-        HttpLoggingInterceptor().also {
-            it.setLevel(
-                HttpLoggingInterceptor.Level.BODY
-            )
-        }
-    }
-    private val cookieJar: ClearableCookieJar by lazy {
-        PersistentCookieJar(SetCookieCache(), SharedPrefsCookiePersistor(mContext))
+
+    private val clientBuilder: OkHttpClient.Builder by lazy {
+        initOkHttpClientBuilder()
     }
 
     private val okHttpClient: OkHttpClient by lazy {
-        initOkHttpClientBuilder()
+        clientBuilder.build()
     }
 
     private val retrofit: Retrofit by lazy {
@@ -61,7 +55,6 @@ class NetworkClient constructor(mContext: Context) {
     private fun initRetrofitBuilder(): Retrofit {
         return Retrofit.Builder()
             .client(okHttpClient)
-            // 收到非json時的ConverterFactory
             .addConverterFactory(ScalarsConverterFactory.create())
             .addConverterFactory(
                 GsonConverterFactory.create(
@@ -87,33 +80,43 @@ class NetworkClient constructor(mContext: Context) {
             .build()
     }
 
-    private fun initOkHttpClientBuilder(): OkHttpClient {
+    private fun initOkHttpClientBuilder(): OkHttpClient.Builder {
         return OkHttpClient.Builder()
             .callTimeout(defaultTimeOut, TimeUnit.SECONDS)
             .connectTimeout(defaultTimeOut, TimeUnit.SECONDS)
             .writeTimeout(defaultTimeOut, TimeUnit.SECONDS)
             .readTimeout(defaultTimeOut, TimeUnit.SECONDS)
-            .addInterceptor(loggingInterceptor)
-            .cookieJar(cookieJar)
             /** 統一由retrofit 發起重連 */
             .retryOnConnectionFailure(false)
             /** 預設為不同host name 5個，超過等待連接 */
             .dispatcher(Dispatcher().also {
                 it.maxRequestsPerHost = 10
-            }).build()
+            })
     }
     
     /**
      * HttpLoggingInterceptor setting
      * @param isDebugModel
      */
-    fun setHttpLogging(isDebugModel: Boolean) {
-        loggingInterceptor.setLevel(
-            if (isDebugModel)
-                HttpLoggingInterceptor.Level.BODY
-            else
-                HttpLoggingInterceptor.Level.NONE
-        )
+    fun setLoggingInterceptor(isDebugModel: Boolean = true) {
+        val loggingInterceptor = HttpLoggingInterceptor().also {
+                it.setLevel(
+                    if (isDebugModel)
+                        HttpLoggingInterceptor.Level.BODY
+                    else
+                        HttpLoggingInterceptor.Level.NONE
+                )
+            }
+        clientBuilder.addInterceptor(loggingInterceptor)
+    }
+
+    /**
+     * setCookie
+     * @param context
+     */
+    fun setCookie(context: Context) {
+        val cookieJar = PersistentCookieJar(SetCookieCache(), SharedPrefsCookiePersistor(context))
+        clientBuilder.cookieJar(cookieJar)
     }
 
     /**
