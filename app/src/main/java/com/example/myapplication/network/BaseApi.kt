@@ -13,8 +13,8 @@ object BaseApi {
         NetworkClient
             .getInstance()
             .also {
-                it.setLoggingInterceptor(BuildConfig.DEBUG)
-                it.setCookie(App.instance)
+                it.initDefaultClient(isDebugModel = BuildConfig.DEBUG, context = App.instance)
+                it.addInterceptor(headerInterceptor())
             }
     }
 

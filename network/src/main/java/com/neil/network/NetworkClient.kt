@@ -7,10 +7,7 @@ import com.franmontiel.persistentcookiejar.cache.SetCookieCache
 import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor
 import com.google.gson.GsonBuilder
 import com.neil.network.retryFactory.RetryCallAdapterFactory
-import okhttp3.Call
-import okhttp3.Dispatcher
-import okhttp3.OkHttpClient
-import okhttp3.Request
+import okhttp3.*
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -93,12 +90,17 @@ class NetworkClient {
                 it.maxRequestsPerHost = 10
             })
     }
+
+    fun initDefaultClient(isDebugModel: Boolean = true, context: Context) {
+        setLoggingInterceptor(isDebugModel)
+        setCookie(context)
+    }
     
     /**
      * HttpLoggingInterceptor setting
      * @param isDebugModel
      */
-    fun setLoggingInterceptor(isDebugModel: Boolean = true) {
+    private fun setLoggingInterceptor(isDebugModel: Boolean = true) {
         val loggingInterceptor = HttpLoggingInterceptor().also {
                 it.setLevel(
                     if (isDebugModel)
@@ -114,9 +116,17 @@ class NetworkClient {
      * setCookie
      * @param context
      */
-    fun setCookie(context: Context) {
-        val cookieJar = PersistentCookieJar(SetCookieCache(), SharedPrefsCookiePersistor(context))
+    private fun setCookie(context: Context) {
+        val cookieJar: ClearableCookieJar = PersistentCookieJar(SetCookieCache(), SharedPrefsCookiePersistor(context))
         clientBuilder.cookieJar(cookieJar)
+    }
+
+    /**
+     * addInterceptor
+     * @param interceptor
+     */
+    fun addInterceptor(interceptor: Interceptor) {
+        clientBuilder.addInterceptor(interceptor)
     }
 
     /**
