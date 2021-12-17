@@ -100,7 +100,7 @@ class NetworkClient {
      * HttpLoggingInterceptor setting
      * @param isDebugModel
      */
-    private fun setLoggingInterceptor(isDebugModel: Boolean = true) {
+    private fun setLoggingInterceptor(isDebugModel: Boolean) {
         val loggingInterceptor = HttpLoggingInterceptor().also {
                 it.setLevel(
                     if (isDebugModel)
