@@ -9,17 +9,22 @@ import retrofit2.Retrofit
 import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory
 
 object BaseApi {
+    /**
+     * 原配置
+     */
     val networkClient: NetworkClient by lazy {
         NetworkClient
             .getInstance()
             .also {
-                it.initDefaultClient(isDebugModel = BuildConfig.DEBUG, context = App.instance)
+//                it.setTimeOut(10L)
+                it.setLoggingInterceptor(BuildConfig.DEBUG)
+                it.setCookie(App.instance)
                 it.addInterceptor(headerInterceptor())
             }
     }
 
     /**
-     *  創建新的連線配置
+     *  自定義配置 clientNewBuilder retrofitNewBuilder
      */
     private val newClient: OkHttpClient by lazy {
         NetworkClient

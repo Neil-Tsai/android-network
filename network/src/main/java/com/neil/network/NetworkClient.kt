@@ -1,6 +1,7 @@
 package com.neil.network
 
 import android.content.Context
+import android.util.Log
 import com.franmontiel.persistentcookiejar.ClearableCookieJar
 import com.franmontiel.persistentcookiejar.PersistentCookieJar
 import com.franmontiel.persistentcookiejar.cache.SetCookieCache
@@ -26,6 +27,7 @@ data class RequestTag(var url: String = "")
 class NetworkClient {
 
     companion object {
+        val TAG = NetworkClient::class.simpleName
         @Volatile
         private var instance: NetworkClient? = null
 
@@ -79,7 +81,6 @@ class NetworkClient {
 
     private fun initOkHttpClientBuilder(): OkHttpClient.Builder {
         return OkHttpClient.Builder()
-            .callTimeout(defaultTimeOut, TimeUnit.SECONDS)
             .connectTimeout(defaultTimeOut, TimeUnit.SECONDS)
             .writeTimeout(defaultTimeOut, TimeUnit.SECONDS)
             .readTimeout(defaultTimeOut, TimeUnit.SECONDS)
@@ -91,16 +92,22 @@ class NetworkClient {
             })
     }
 
-    fun initDefaultClient(isDebugModel: Boolean = true, context: Context) {
-        setLoggingInterceptor(isDebugModel)
-        setCookie(context)
+    /**
+     * timeOut setting 預設15s，此處預設10s
+     * @param timeOut
+     */
+    fun setTimeOut(timeOut: Long) {
+        clientBuilder
+            .connectTimeout(timeOut, TimeUnit.SECONDS)
+            .writeTimeout(timeOut, TimeUnit.SECONDS)
+            .readTimeout(timeOut, TimeUnit.SECONDS)
     }
     
     /**
      * HttpLoggingInterceptor setting
      * @param isDebugModel
      */
-    private fun setLoggingInterceptor(isDebugModel: Boolean) {
+    fun setLoggingInterceptor(isDebugModel: Boolean = false) {
         val loggingInterceptor = HttpLoggingInterceptor().also {
                 it.setLevel(
                     if (isDebugModel)
@@ -116,7 +123,7 @@ class NetworkClient {
      * setCookie
      * @param context
      */
-    private fun setCookie(context: Context) {
+    fun setCookie(context: Context) {
         val cookieJar: ClearableCookieJar = PersistentCookieJar(SetCookieCache(), SharedPrefsCookiePersistor(context))
         clientBuilder.cookieJar(cookieJar)
     }
@@ -155,8 +162,10 @@ class NetworkClient {
      * @param newClient 新的請求, 不帶參數為原client
      */
     fun clientCancel(url: String?, newClient: OkHttpClient = okHttpClient) {
-        if (url.isNullOrEmpty())
+        if (url.isNullOrEmpty()) {
+            Log.w(TAG, "clientCancel param url is null or empty.")
             return
+        }
         for (call: Call in newClient.dispatcher.queuedCalls()) {
             cancel(call, url)
         }
