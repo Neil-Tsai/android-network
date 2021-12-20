@@ -24,13 +24,17 @@ Step 2. Add the dependency
 	}
 
 ```
-## 基本配置可直接使用
+## 基本配置使用
+
 ```kotlin
 object TestApi {
-
     private val service: ApiService by lazy {
-        NetworkClient.getInstance(mContext)
-            .create(ApiService::class.java)
+        NetworkClient.getInstance().also { 
+                it.setTimeOut(10L)
+                it.setLoggingInterceptor(BuildConfig.DEBUG)
+                it.setCookie(App.instance)
+                it.addInterceptor(headerInterceptor())
+        }.create(ApiService::class.java)
     }
     
     interface ApiService {
