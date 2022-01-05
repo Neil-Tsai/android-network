@@ -15,11 +15,10 @@ object BaseApi {
     val networkClient: NetworkClient by lazy {
         NetworkClient
             .getInstance()
-            .also {
-//                it.setTimeOut(10L)
-                it.setLoggingInterceptor(BuildConfig.DEBUG)
-                it.setCookie(App.instance)
-                it.addInterceptor(headerInterceptor())
+            .apply {
+                setLoggingInterceptor()
+                setCookie(App.instance)
+                addInterceptor(headerInterceptor())
             }
     }
 
@@ -36,8 +35,7 @@ object BaseApi {
     val newRetrofit: Retrofit by lazy {
         NetworkClient
             .getInstance()
-            .retrofitNewBuilder()
-            .client(newClient)
+            .retrofitNewBuilder(newClient)
             .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
             .build()
     }

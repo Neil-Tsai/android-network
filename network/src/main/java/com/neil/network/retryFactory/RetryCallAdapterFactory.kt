@@ -129,6 +129,11 @@ class RetryCallAdapterFactory : CallAdapter.Factory() {
                     return
                 }
             }
+            // 如果取消，就不用重試
+            if (t.message == "Canceled") {
+                callback.onFailure(call, t)
+                return
+            }
 
             if (retryCount.incrementAndGet() <= maxRetries) {
                 retryCall()

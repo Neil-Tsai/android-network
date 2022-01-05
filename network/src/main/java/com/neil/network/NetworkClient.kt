@@ -146,7 +146,23 @@ class NetworkClient {
      * newBuilder會複制原有的builder
      * 添加或重新配置更多設置，配置後 build()創建另一個okHttpClient來使用
      */
-    fun retrofitNewBuilder(): Retrofit.Builder = retrofit.newBuilder()
+    fun retrofitNewBuilder(newClient: OkHttpClient? = null): Retrofit.Builder {
+        val newBuilder =  retrofit.newBuilder()
+        if (newClient != null) {
+            newBuilder
+                .client(newClient)
+                .callFactory(object : Call.Factory {
+                    override fun newCall(request: Request): Call {
+                        val newRequest = request.newBuilder()
+                            .tag(RequestTag(request.url.toString()))
+                            .build()
+                        return newClient.newCall(newRequest)
+                    }
+                })
+        }
+        return newBuilder
+    }
+
 
     /**
      * 取消全部client請求
@@ -178,7 +194,7 @@ class NetworkClient {
      * 比對tag url 判斷要取消client，並將要取消的client tag設置為Canceled
      */
     private fun cancel(call: Call, url: String) {
-        call.request().tag()?.let {
+        call.request().tag()?.also {
             it as RequestTag
             if (url == it.url) {
                 it.url = "Canceled"
