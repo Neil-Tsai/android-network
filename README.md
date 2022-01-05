@@ -27,6 +27,15 @@ Step 2. Add the dependency
 ## 基本配置使用
 
 ```kotlin
+init Logger
+Logger.addLogAdapter(object : AndroidLogAdapter() {
+	override fun isLoggable(priority: Int, tag: String?): Boolean {
+	    return BuildConfig.DEBUG
+	}
+})
+```
+
+```kotlin
 object TestApi {
     private val service: ApiService by lazy {
         NetworkClient.getInstance().also { 
